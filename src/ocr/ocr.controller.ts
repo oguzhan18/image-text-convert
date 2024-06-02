@@ -1,20 +1,9 @@
-import {
-  Controller,
-  Post,
-  UseInterceptors,
-  UploadedFile,
-} from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OcrService } from './ocr.service';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiConsumes,
-  ApiBody,
-} from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
+import { ApiOperation, ApiResponse, ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { Express } from 'express';
 
 /**
  * Controller responsible for handling OCR operations.
@@ -31,10 +20,7 @@ export class OcrController {
    */
   @Post('extract-text')
   @ApiOperation({ summary: 'Extract text from an uploaded image' })
-  @ApiResponse({
-    status: 201,
-    description: 'The text has been successfully extracted.',
-  })
+  @ApiResponse({ status: 201, description: 'The text has been successfully extracted.' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -49,21 +35,10 @@ export class OcrController {
   })
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-        },
-      }),
+      storage: memoryStorage(),
     }),
   )
-  async extractText(
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<string> {
-    const imagePath = file.path;
-    return this.ocrService.extractTextFromImage(imagePath);
+  async extractText(@UploadedFile() file: Express.Multer.File): Promise<string> {
+    return this.ocrService.extractTextFromImage(file.buffer);
   }
 }

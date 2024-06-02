@@ -7,13 +7,13 @@ import * as Tesseract from 'tesseract.js';
 @Injectable()
 export class OcrService {
   /**
-   * Extracts text from a given image path using Tesseract OCR.
-   * @param imagePath The path to the image file.
+   * Extracts text from a given image buffer using Tesseract OCR.
+   * @param imageBuffer The buffer of the image file.
    * @returns A promise that resolves to the extracted text.
    */
-  async extractTextFromImage(imagePath: string): Promise<string> {
+  async extractTextFromImage(imageBuffer: Buffer): Promise<string> {
     try {
-      const result = await Tesseract.recognize(imagePath, 'eng');
+      const result = await Tesseract.recognize(imageBuffer, 'eng');
       return result.data.text;
     } catch (error) {
       throw new Error(`Failed to extract text from image: ${error.message}`);
